@@ -4,22 +4,36 @@ import './App.css';
 const App = () => {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
+  const [apiUrl, setApiUrl] = useState('http://localhost:3000/todos');
 
-  const API_URL = 'http://localhost:4000/todos';
+  // Load configuration from config.json
+  useEffect(() => {
+    fetch('/config.json')
+      .then(response => response.json())
+      .then(config => {
+        setApiUrl(config.API_URL);
+      })
+      .catch(() => {
+        // Fallback to default if config.json fails to load
+        setApiUrl('http://localhost:3000/todos');
+      });
+  }, []);
 
   // Fetch all todos
   useEffect(() => {
-    fetch(API_URL)
+    if (!apiUrl) return; // Wait for API URL to be loaded
+    
+    fetch(apiUrl)
       .then(response => response.json())
       .then(data => setTodos(data))
       .catch(error => console.error('Error fetching todos:', error));
-  }, []);
+  }, [apiUrl]);
 
   // Add a new todo
   const addTodo = () => {
     if (!newTodo.trim()) return;
 
-    fetch(API_URL, {
+    fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: newTodo, completed: false })
@@ -33,7 +47,7 @@ const App = () => {
 
   // Update a todo
   const updateTodo = (id, updatedFields) => {
-    fetch(`${API_URL}/${id}`, {
+    fetch(`${apiUrl}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedFields)
@@ -47,7 +61,7 @@ const App = () => {
 
   // Delete a todo
   const deleteTodo = id => {
-    fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+    fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
       .then(() => {
         setTodos(todos.filter(todo => todo.id !== id));
       })
