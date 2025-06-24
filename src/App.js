@@ -4,18 +4,23 @@ import './App.css';
 const App = () => {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
-  const [apiUrl, setApiUrl] = useState('http://localhost:3000/todos');
+  const [apiUrl, setApiUrl] = useState('http://localhost:4000/todos');
 
   // Load configuration from config.json
   useEffect(() => {
     fetch('/config.json')
       .then(response => response.json())
       .then(config => {
-        setApiUrl(config.API_URL);
+        // Check if it's still a placeholder (for local development)
+        if (config.API_URL === 'REACT_APP_API_URL_PLACEHOLDER') {
+          setApiUrl('http://localhost:4000/todos');
+        } else {
+          setApiUrl(config.API_URL);
+        }
       })
       .catch(() => {
         // Fallback to default if config.json fails to load
-        setApiUrl('http://localhost:3000/todos');
+        setApiUrl('http://localhost:4000/todos');
       });
   }, []);
 
